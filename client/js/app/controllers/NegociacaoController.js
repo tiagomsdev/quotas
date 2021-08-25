@@ -8,25 +8,20 @@ class NegociacaoController{
 
         const self = this;
 
-        //this._listaNegociacao = new ListaNegociacao(model => this._negociacaoView.update(model));
-        this._listaNegociacao = new Proxy(new ListaNegociacao(), {
-            get: function(target, prop,receiver){
-                if(['adiciona','apaga'].includes(prop) && typeof(target[prop]) == typeof(Function) ){
-                    return function(){
-                        console.log(`a propriedade ${prop} foi interceptada`);
-                        Reflect.apply(target[prop],target, arguments);
-                        self._negociacaoView.update(target);
-                    }
-                }
-                
-                return Reflect.get(target,prop,receiver);
-            }
-        });
+        //usa a ProxyFactory para criar um novo proxy de ListaNegociacao
+        this._listaNegociacao = ProxyFactory.create(
+            new ListaNegociacao(), 
+            ['adiciona','apaga']
+            , model => this._negociacaoView.update(model));
 
         this._negociacaoView = new NegociacaoView($('#negociacoesView'));
         this._negociacaoView.update(this._listaNegociacao);
-
-        this._mensagem = new Mensagem();
+        
+        //usa a ProxyFactory para criar um novo proxy de Mensagem
+        this._mensagem = ProxyFactory.create(
+            new Mensagem(),
+            ['texto'],
+            model => this._mensagemView.update(model));
         this._mensagemView = new MensagemView($('#mensagemView'));
     }
 
@@ -36,7 +31,7 @@ class NegociacaoController{
         this._listaNegociacao.adiciona(this._criaNegociacao());
 
         this._mensagem.texto = 'Negociacao adicionada com sucesso';
-        this._mensagemView.update(this._mensagem);
+        //this._mensagemView.update(this._mensagem);
         
         this._limpaFormulario();
         
@@ -48,7 +43,7 @@ class NegociacaoController{
         this._listaNegociacao.apaga();        
 
         this._mensagem.texto = 'Lista apagada com sucesso!';
-        this._mensagemView.update(this._mensagem);
+        //this._mensagemView.update(this._mensagem);
     }
 
     _limpaFormulario(){
