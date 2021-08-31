@@ -6,27 +6,15 @@ class NegociacaoController{
         this._inputQuantidade = $('#quantidade');
         this._inputValor = $('#valor');
 
-        //usa a ProxyFactory para criar um novo proxy de ListaNegociacao
-        /*this._listaNegociacao = ProxyFactory.create(
-            new ListaNegociacao(), 
-            ['adiciona','apaga']
-            , model => this._negociacaoView.update(model));*/
-
+        //usa o Biding para criar uma ProxyFactory que cria um novo proxy de Negociacao
         this._negociacaoView = new NegociacaoView($('#negociacoesView'));
         
         this._listaNegociacao = new Bind(
             new ListaNegociacao(),
             this._negociacaoView,
             ['adiciona','apaga']);
-
-        //this._negociacaoView.update(this._listaNegociacao);
         
-        //usa a ProxyFactory para criar um novo proxy de Mensagem
-        /*this._mensagem = ProxyFactory.create(
-            new Mensagem(),
-            ['texto'],
-            model => this._mensagemView.update(model));
-        */
+        //usa o Biding para criar uma ProxyFactory que cria um novo proxy de Mensagem
         this._mensagemView = new MensagemView($('#mensagemView'));
 
         this._mensagem = new Bind(
@@ -71,5 +59,19 @@ class NegociacaoController{
                     this._inputQuantidade.value,
                     this._inputValor.value
                     );
+    }
+
+    importaNegociacoes(){
+        const service = new NegociacaoService();
+        service.obterNegociacoesSemana((erro, negociacoes) =>{
+            if(erro){
+                this._mensagem.texto = erro;
+                return;
+            }
+
+            //Percorre o array de negociacoes e adiciona na lista de negociacao
+            negociacoes.forEach(negociacao => this._listaNegociacao.adiciona(negociacao));
+            this._mensagem.texto = 'Negociacoes importadas com sucesso';
+        })
     }
 }
