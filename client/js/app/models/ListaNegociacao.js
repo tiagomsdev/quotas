@@ -18,4 +18,8 @@ class ListaNegociacao{
     get negociacoes(){
         return [].concat(this._listaNegociacoes);
     }
+
+    ordena(criterio){
+        this.negociacoes.sort(criterio);
+    }
 }

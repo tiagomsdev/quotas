@@ -16,7 +16,6 @@ class ProxyFactory {
             //Cria uma interceptacao do metodo set para Mensagens pois a propriedade texto nao é uma function
             set: function(target, prop, value, receiver){
                 if(props.includes(prop)){
-                    console.log('entrou');
                     target[prop] = value;
                     acao(target);
                 }

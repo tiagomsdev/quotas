@@ -12,7 +12,7 @@ class NegociacaoController{
         this._listaNegociacao = new Bind(
             new ListaNegociacao(),
             this._negociacaoView,
-            ['adiciona','apaga']);
+            ['adiciona','apaga','ordena']);
         
         //usa o Biding para criar uma ProxyFactory que cria um novo proxy de Mensagem
         this._mensagemView = new MensagemView($('#mensagemView'));
@@ -63,15 +63,23 @@ class NegociacaoController{
 
     importaNegociacoes(){
         const service = new NegociacaoService();
-        service.obterNegociacoesSemana((erro, negociacoes) =>{
-            if(erro){
-                this._mensagem.texto = erro;
-                return;
-            }
 
-            //Percorre o array de negociacoes e adiciona na lista de negociacao
-            negociacoes.forEach(negociacao => this._listaNegociacao.adiciona(negociacao));
+        //Executa as promisses em ordem, devolve o resultado e o erro 
+        Promise.all([
+            service.obterNegociacoesSemana(),
+            service.obterNegociacoesAnterior(),
+            service.obterNegociacoesRetrasada()
+        ])
+        .then(negociacoes => {
+            negociacoes
+            .reduce((arrayAchatado, array) => arrayAchatado.concat(array), [])
+            .forEach(negociacao => this._listaNegociacao.adiciona(negociacao))
             this._mensagem.texto = 'Negociacoes importadas com sucesso';
         })
+        .catch(erro => this._mensagem.texto = erro);
+    }
+
+    ordena(coluna){
+        this._listaNegociacao.ordena((a,b) => a[coluna] - b[coluna]);
     }
 }
